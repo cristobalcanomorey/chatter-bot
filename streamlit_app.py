@@ -1,9 +1,9 @@
 import streamlit as st
-import openai
+# import replicate
+import os
 
-openai.api_key = st.secrets['SECRET']
 st.markdown("""
-# Work in progress
+# Work in progress 
 """)
 
 if "messages" not in st.session_state:
@@ -23,7 +23,7 @@ if prompt:
         "content": prompt
     })
     #TODO
-    chat_response = openai.api_key
+    chat_response = 'work in progress'
     response = f'{chat_response}'
     with st.chat_message(name='assistant'):
         st.write(response)
