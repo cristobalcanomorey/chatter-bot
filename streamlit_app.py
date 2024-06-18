@@ -6,19 +6,20 @@ import subprocess
 
 llm = Ollama(model='llama3')
 
-# streamlit run streamlit_app.py --server.enableCORS false --server.enableXsrfProtection false
-if st.button("Clear Messages"):
-    st.session_state.messages.clear()
-
 prompt = ""
 if "messages" not in st.session_state:
-    subprocess.run(["installation.sh"])
+    subprocess.run(["chmod","+x","installation.sh"])
+    subprocess.run(["sh","./installation.sh"])
     st.session_state.messages = [
         {
         "role": "assistant",
         "content": "Hello! I am helpful assistant."
         }
     ]
+
+# streamlit run streamlit_app.py --server.enableCORS false --server.enableXsrfProtection false
+if st.button("Clear Messages"):
+    st.session_state.messages.clear()
 
 for message in st.session_state.messages:
     with st.chat_message(message['role']):
