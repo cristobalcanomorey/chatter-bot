@@ -1,10 +1,13 @@
 import streamlit as st
 # import replicate
 import os
-from langchain_community.llms import Ollama
 import subprocess
+# import ollama
 
-llm = Ollama(model='llama3')
+
+st.set_page_config(
+    layout="wide"
+)
 
 if st.button("Clear Messages"):
     st.session_state.messages.clear()
@@ -19,7 +22,7 @@ def run_command(command):
     process.wait()
     stdout, stderr = process.communicate()
     if process.returncode != 0:
-        st.error(f"Error occurred: {stderr.strip()}")
+        st.error(f"Error occurred: {stderr.strip()}{stdout}")
     else:
         st.success("Command executed successfully.")
 
@@ -46,6 +49,10 @@ if "messages" not in st.session_state:
     pull_command = "ollama pull llama3"
     with st.spinner("Downloading llama3..."):
         run_command(pull_command)
+    
+    from langchain_community.llms import Ollama
+
+    llm = Ollama(model='llama3')
     
 
 # streamlit run streamlit_app.py --server.enableCORS false --server.enableXsrfProtection false
