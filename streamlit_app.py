@@ -16,7 +16,7 @@ def run_command(command):
     process.wait()
     stdout, stderr = process.communicate()
     if process.returncode != 0:
-        st.error(f"Error occurred: {stderr}")
+        st.error(f"Error occurred: {stdout}")
     else:
         st.success("Command executed successfully.")
 
