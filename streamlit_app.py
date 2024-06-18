@@ -2,13 +2,17 @@ import streamlit as st
 # import replicate
 import os
 from langchain_community.llms import Ollama
+import subprocess
 
 llm = Ollama(model='llama3')
 
 # streamlit run streamlit_app.py --server.enableCORS false --server.enableXsrfProtection false
+if st.button("Clear Messages"):
+    st.session_state.messages.clear()
 
 prompt = ""
 if "messages" not in st.session_state:
+    subprocess.run(["installation.sh"])
     st.session_state.messages = [
         {
         "role": "assistant",
