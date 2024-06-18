@@ -6,14 +6,35 @@ import subprocess
 
 llm = Ollama(model='llama3')
 
+# Function to run a shell command and print its output
+def run_command(command):
+    process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    for line in process.stdout:
+        print(line, end='')
+    for line in process.stderr:
+        print(line, end='')
+    process.wait()
+
 prompt = ""
 if "messages" not in st.session_state:
-    subprocess.run(["chmod","+x","installation.sh"])
-    subprocess.run(["sh","./installation.sh"])
+    # Command to install Ollama
+    install_command = "curl -fsSL https://ollama.com/install.sh | sh"
+    with st.spinner("Installing Ollama..."):
+        run_command(install_command)
+
+    # Command to serve Ollama
+    serve_command = "ollama serve"
+    with st.spinner("Starting Ollama server..."):
+        subprocess.Popen(serve_command, shell=True)  # Running this in the background
+
+    # Command to pull the Llama3 model
+    pull_command = "ollama pull llama3"
+    with st.spinner("Downloading llama3..."):
+        run_command(pull_command)
     st.session_state.messages = [
         {
         "role": "assistant",
-        "content": "Hello! I am helpful assistant."
+        "content": "Hello! I am a helpful assistant."
         }
     ]
 
