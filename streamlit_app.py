@@ -1,35 +1,48 @@
 import streamlit as st
 # import replicate
 import os
+from langchain_community.llms import Ollama
 
-# st.markdown("""
-# # Work in progress 
-# """)
+llm = Ollama(model='llama3')
 
+# streamlit run streamlit_app.py --server.enableCORS false --server.enableXsrfProtection false
+
+prompt = ""
 if "messages" not in st.session_state:
-    st.session_state.messages = []
+    st.session_state.messages = [
+        {
+        "role": "assistant",
+        "content": "Hello! I am helpful assistant."
+        }
+    ]
 
 for message in st.session_state.messages:
     with st.chat_message(message['role']):
         st.markdown(message['content'])
+        prompt += f'{message["role"]} said: {message["content"]}\n '
 
-prompt = st.chat_input('Ask me anything')
-if prompt:
+sent = st.chat_input('Ask me anything')
+
+if sent:
+    prompt += f'user said: {sent}\n'
     with st.chat_message('user'):
-        st.markdown(prompt)
+        st.markdown(sent)
 
-    st.session_state.messages.append({
+    user_prompt = {
         "role": "user",
-        "content": prompt
-    })
-    #TODO
-    chat_response = 'work in progress'
-    response = f'{chat_response}'
-    with st.chat_message(name='assistant'):
-        st.write(response)
-    
-    st.session_state.messages.append({
-        "role": "assistant",
-        "content": response
-    })
+        "content": sent
+    }
+    st.session_state.messages.append(user_prompt)
+
+    prompt += 'assistant said:'
+    with st.spinner("Generating response..."):
+        chat_response = llm.invoke(prompt, stop=['<|eot_id|>'])
+        response = f'{chat_response}'
+        with st.chat_message(name='assistant'):
+            st.write(response)
+        
+        st.session_state.messages.append({
+            "role": "assistant",
+            "content": response
+        })
 
