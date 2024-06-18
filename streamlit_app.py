@@ -14,6 +14,11 @@ def run_command(command):
     for line in process.stderr:
         print(line, end='')
     process.wait()
+    stdout, stderr = process.communicate()
+    if process.returncode != 0:
+        st.error(f"Error occurred: {stderr}")
+    else:
+        st.success("Command executed successfully.")
 
 prompt = ""
 if "messages" not in st.session_state:
