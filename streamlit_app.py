@@ -6,6 +6,9 @@ import subprocess
 
 llm = Ollama(model='llama3')
 
+if st.button("Clear Messages"):
+    st.session_state.messages.clear()
+
 # Function to run a shell command and print its output
 def run_command(command):
     process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
@@ -16,12 +19,19 @@ def run_command(command):
     process.wait()
     stdout, stderr = process.communicate()
     if process.returncode != 0:
-        st.error(f"Error occurred: {stdout}")
+        st.error(f"Error occurred: {stderr.strip}")
     else:
         st.success("Command executed successfully.")
 
 prompt = ""
+
 if "messages" not in st.session_state:
+    st.session_state.messages = [
+        {
+        "role": "assistant",
+        "content": "Hello! I am a helpful assistant."
+        }
+    ]
     # Command to install Ollama
     install_command = "curl -fsSL https://ollama.com/install.sh | sh"
     with st.spinner("Installing Ollama..."):
@@ -36,16 +46,10 @@ if "messages" not in st.session_state:
     pull_command = "ollama pull llama3"
     with st.spinner("Downloading llama3..."):
         run_command(pull_command)
-    st.session_state.messages = [
-        {
-        "role": "assistant",
-        "content": "Hello! I am a helpful assistant."
-        }
-    ]
+    
 
 # streamlit run streamlit_app.py --server.enableCORS false --server.enableXsrfProtection false
-if st.button("Clear Messages"):
-    st.session_state.messages.clear()
+
 
 for message in st.session_state.messages:
     with st.chat_message(message['role']):
