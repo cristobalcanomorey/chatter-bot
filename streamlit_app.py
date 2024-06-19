@@ -3,7 +3,9 @@ import streamlit as st
 import os
 import subprocess
 # import ollama
+from langchain_community.llms import Ollama
 
+llm = Ollama(model='llama3')
 
 st.set_page_config(
     layout="wide"
@@ -36,23 +38,21 @@ if "messages" not in st.session_state:
         }
     ]
     # Command to install Ollama
-    install_command = "curl -fsSL https://ollama.com/install.sh | sh"
-    with st.spinner("Installing Ollama..."):
-        run_command(install_command)
+    # install_command = "curl -fsSL https://ollama.com/install.sh | sh"
+    # with st.spinner("Installing Ollama..."):
+    #     run_command(install_command)
 
-    # Command to serve Ollama
-    serve_command = "ollama serve"
-    with st.spinner("Starting Ollama server..."):
-        subprocess.Popen(serve_command, shell=True)  # Running this in the background
+    # # Command to serve Ollama
+    # serve_command = "ollama serve"
+    # with st.spinner("Starting Ollama server..."):
+    #     subprocess.Popen(serve_command, shell=True)  # Running this in the background
 
-    # Command to pull the Llama3 model
-    pull_command = "ollama pull llama3"
-    with st.spinner("Downloading llama3..."):
-        run_command(pull_command)
+    # # Command to pull the Llama3 model
+    # pull_command = "ollama pull llama3"
+    # with st.spinner("Downloading llama3..."):
+    #     run_command(pull_command)
     
-    from langchain_community.llms import Ollama
-
-    llm = Ollama(model='llama3')
+    
     
 
 # streamlit run streamlit_app.py --server.enableCORS false --server.enableXsrfProtection false
