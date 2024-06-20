@@ -62,8 +62,6 @@ for message in st.session_state.messages:
     with st.chat_message(message['role']):
         st.markdown(message['content'])
 
-sent = st.chat_input('Ask me anything about the curriculum')
-
 def list_to_natural_language(lst):
     if not lst:
         return "empty list"
@@ -76,7 +74,7 @@ list_of_contexts = list(curriculum_data.keys())
 available_categories = list_to_natural_language(list_of_contexts)
 
 def get_context(prompt):
-    query = f'What is the correct category for the following question? Question: "{prompt}"'
+    query = f'What is the only correct category for the following question? Question: "{prompt}"'
     model_name = "deepset/roberta-base-squad2"
     nlp = pipeline('question-answering', model=model_name, tokenizer=model_name)
     QA_input = {
@@ -109,15 +107,31 @@ def send_AI_response(response, clarification):
     with st.chat_message(name='assistant'):
         st.write(response)
         st.write(clarification)
+    
+def log_AI_response(response):
     st.session_state.messages.append({
         "role": "assistant",
         "content": response
     })
+# Initialize session state
+if 'submitted' not in st.session_state:
+    st.session_state.submitted = False
 
-if sent:
+if 'manual_context' not in st.session_state:
+    st.session_state.sent = ""
+
+if 'messages' not in st.session_state:
+    st.session_state.messages = []
+
+def default():
+    print('-default-')
+    st.session_state.submitted = False
+    st.session_state.sent = ""
+# default()
+def handle_message(sent):
     with st.chat_message('user'):
         st.markdown(sent)
-
+    
     user_message = {
         "role": "user",
         "content": sent
@@ -125,49 +139,51 @@ if sent:
     st.session_state.messages.append(user_message)
 
     with st.spinner("Generating response..."):
-                
-        #TODONE:
-        # - If contexto manual:
-            # Generar respuesta 
-        # - else:
-            # - Obtener contexto por IA
-            # - If contexto bueno:
-                # Generar respuesta
-            # - else:
-                # Formulario de contexto
+        context = get_context(sent)
 
-        if manual_context:
-            context = manual_context
-            manual_context = None
-            response, context = generate_response(sent,context)
+        if st.session_state.submitted:
+            print('submitted')
+            context = curriculum_data[st.session_state.submitted]
+            response, context = generate_response(sent, context)
             clarification = f'Context: "{context}"'
             send_AI_response(response, clarification)
+            log_AI_response(response)
+            log_AI_response(clarification)
+            st.session_state.submitted = False
+            st.session_state.sent = ''
+        elif context:
+            print('context')
+            response, context = generate_response(sent, context)
+            clarification = f'Context: "{context}"'
+            send_AI_response(response, clarification)
+            log_AI_response(response)
+            log_AI_response(clarification)
         else:
-            context = get_context(sent)
-            if context:
-                response, context = generate_response(sent,context)
-                clarification = f'Context: "{context}"'
-                send_AI_response(response, clarification)
-            else:
-                send_AI_response(
-                    "Sorry to inform that I couldn't understand what you're talking about",
-                    "Please select one of the options:"
-                )
-                list_expanded = [''] + list_of_contexts
-                with st.form(key="Manual context"):
-                    manual_context = st.selectbox(
-                        "I'm not the smartest AI... What is this question about?",
-                        tuple(list_expanded),
-                        key = 'context_selectbox')
-                    submit_button = st.form_submit_button(label='Submit')
-                    if submit_button:
-                        print(f'Manual context: {manual_context}')
-                        context = manual_context
-                        response, context = generate_response(sent,context)
-                        clarification = f'Context: "{context}"'
-                        send_AI_response(response, clarification)
-          
+            print('else')
+            st.session_state.sent = sent
+            st.session_state.submitted = False
+            st.rerun()
 
-            
-                        
-        
+def handle_form_submit(manual_context):
+    print('form sub')
+    st.session_state.submitted = manual_context
+    st.rerun()
+
+sent = st.chat_input('Ask me anything about the curriculum')
+if sent:
+    handle_message(sent)
+elif st.session_state.sent and st.session_state.submitted:
+    handle_message(st.session_state.sent)
+
+# Check if we need to show the form
+if st.session_state.sent and not st.session_state.submitted:
+    list_expanded = [''] + list_of_contexts
+    with st.form(key="manual_context_form"):
+        manual_context = st.selectbox(
+            "I'm not the smartest AI... What is this question about?",
+            options=tuple(list_expanded)
+        )
+        submit = st.form_submit_button(label='Submit')
+
+        if submit:
+            handle_form_submit(manual_context)
